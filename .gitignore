@@ -39,8 +39,8 @@ ehthumbs.db
 Thumbs.db
 
 # Data files (if large)
-# Uncomment if you don't want to track data files
-# data/
+data/cifar-10-python.tar.gz
+data/cifar-10-batches-py/
 
 # Model checkpoints (if large)
 # models/*.pt
@@ -50,4 +50,8 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
-*.swo 
+*.swo
+
+# CIFAR-10 dataset
+data/cifar-10-python.tar.gz
+data/cifar-10-batches-py/ 

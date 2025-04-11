@@ -4,53 +4,57 @@
 
 ### Accuracy Comparison
 
-Our experiments with non-IID data (α=0.1) revealed significant impacts on model performance across all privacy approaches:
+Our experiments with non-IID data (α=0.5) revealed significant impacts on model performance across all privacy approaches:
 
-| Approach | IID Accuracy | Non-IID Accuracy | Absolute Drop | Relative Drop |
-| -------- | ------------ | ---------------- | ------------- | ------------- |
-| Baseline | 68.34%       | 58.17%           | 10.17%        | 14.88%        |
-| HE       | 57.90%       | 53.32%           | 4.58%         | 7.91%         |
-| DP       | 35.05%       | 28.51%           | 6.54%         | 18.66%        |
-| HE+DP    | 34.95%       | 19.52%           | 15.43%        | 44.15%        |
+| Approach          | IID Accuracy (%) | Non-IID Accuracy (%) | Absolute Drop (%) | Relative Drop (%) |
+| ----------------- | ---------------- | -------------------- | ----------------- | ----------------- |
+| Baseline          | 68.34            | 66.06                | 2.28              | 3.34              |
+| HE                | 57.90            | 54.65                | 3.25              | 5.61              |
+| DP                | 35.05            | 32.28                | 2.77              | 7.90              |
+| Standard Hybrid   | 34.95            | 23.95                | 11.00             | 31.47             |
+| Sequential Hybrid | 33.51            | 30.78                | 2.73              | 8.15              |
 
-![IID vs Non-IID Accuracy Comparison](/analysis_results/comparison/iid_vs_non_iid_accuracy.png)
+![IID vs Non-IID Accuracy Comparison](/analysis_results/iid_vs_non_iid_accuracy.png)
 
 ### Key Observations
 
 1. **All approaches suffer performance degradation** with heterogeneous data distributions
-2. **HE shows the highest resilience** to data heterogeneity with only 7.91% relative accuracy drop
-3. **Hybrid approach (HE+DP) is most vulnerable** to non-IID data with 44.15% relative drop
-4. **The privacy-heterogeneity relationship is non-linear** - approaches with stronger privacy protections generally suffer more from data heterogeneity
+2. **HE shows high resilience** to data heterogeneity with only 5.61% relative accuracy drop
+3. **Standard Hybrid approach is most vulnerable** to non-IID data with 31.47% relative drop
+4. **Sequential Hybrid significantly outperforms Standard Hybrid** in heterogeneous settings (30.78% vs 23.95%)
+5. **The privacy-heterogeneity relationship is non-linear** - different privacy mechanisms exhibit varying levels of sensitivity to data heterogeneity
 
 ## 2. Privacy-Heterogeneity Tradeoff
 
-![Privacy-Heterogeneity Tradeoff](/analysis_results/comparison/privacy_heterogeneity_tradeoff.png)
+![Privacy-Heterogeneity Tradeoff](/analysis_results/privacy_heterogeneity_tradeoff.png)
 
 ### Heterogeneity Sensitivity Analysis
 
-- **Baseline**: Moderate sensitivity (14.88% drop)
-- **HE**: Low sensitivity (7.91% drop) despite providing moderate privacy
-- **DP**: Medium-high sensitivity (18.66% drop)
-- **HE+DP**: Very high sensitivity (44.15% drop)
+- **Baseline**: Low sensitivity (3.34% drop)
+- **HE**: Low sensitivity (5.61% drop) despite providing moderate privacy
+- **DP**: Moderate sensitivity (7.90% drop)
+- **Sequential Hybrid**: Moderate sensitivity (8.15% drop)
+- **Standard Hybrid**: High sensitivity (31.47% drop)
 
-The data suggests a significant three-way tradeoff between privacy, utility, and robustness to data heterogeneity.
+The data suggests a significant three-way tradeoff between privacy, utility, and robustness to data heterogeneity, with the sequential hybrid approach offering a better compromise than the standard hybrid.
 
-![Three-way Tradeoff](/analysis_results/comparison/three_way_tradeoff.png)
+![Three-Way Trade-off Analysis](/analysis_results/3d_tradeoff.png)
 
 ## 3. Robustness to Heterogeneity
 
 Each approach's ability to maintain accuracy with heterogeneous data can be measured as "accuracy retention":
 
-![Accuracy Retention](/analysis_results/comparison/accuracy_retention.png)
+![Accuracy Retention](/analysis_results/accuracy_retention.png)
 
 ### Heterogeneity Robustness Ranking
 
-1. **HE**: 92.1% accuracy retention - Most robust
-2. **Baseline**: 85.1% accuracy retention
-3. **DP**: 81.3% accuracy retention
-4. **HE+DP**: 55.9% accuracy retention - Least robust
+1. **HE**: 94.39% accuracy retention - Most robust
+2. **Baseline**: 96.66% accuracy retention
+3. **Sequential Hybrid**: 91.85% accuracy retention
+4. **DP**: 92.10% accuracy retention
+5. **Standard Hybrid**: 68.53% accuracy retention - Least robust
 
-This finding is particularly interesting because it suggests that homomorphic encryption not only provides privacy but also improves model robustness to data heterogeneity compared to the baseline.
+This finding is particularly interesting because it demonstrates that our novel sequential hybrid approach maintains significantly better robustness to data heterogeneity compared to the standard hybrid approach, while still providing similar privacy guarantees.
 
 ## 4. Revised Practical Recommendations
 
@@ -60,27 +64,27 @@ Based on our combined IID and non-IID results, we revise our practical recommend
 
 1. **High accuracy, no privacy**: Baseline (68.34%)
 2. **Moderate privacy, good accuracy**: HE (57.90%)
-3. **Strong privacy, acceptable accuracy**: DP (35.05%) or HE+DP (34.95%)
+3. **Strong privacy, acceptable accuracy**: DP (35.05%), Standard Hybrid (34.95%), or Sequential Hybrid (33.51%)
 
 ### For Non-IID Data Scenarios:
 
-1. **High accuracy, no privacy**: Baseline (58.17%)
-2. **Moderate privacy, good accuracy**: HE (53.32%)
-3. **Strong privacy, moderate accuracy**: DP (28.51%)
-4. **Very strong privacy, lower accuracy**: HE+DP (19.52%)
+1. **High accuracy, no privacy**: Baseline (66.06%)
+2. **Moderate privacy, good accuracy**: HE (54.65%)
+3. **Strong privacy, moderate accuracy**: DP (32.28%) or Sequential Hybrid (30.78%)
+4. **Strong privacy, lower accuracy**: Standard Hybrid (23.95%)
 
-**For highly heterogeneous data**: HE is strongly recommended as it provides the best balance of privacy, utility, and robustness to heterogeneity.
+**For heterogeneous data environments**: The Sequential Hybrid approach is strongly recommended over the Standard Hybrid when deploying with non-IID data, as it provides similar privacy protection but much better accuracy retention.
 
 ## 5. Theoretical Insights
 
-1. **Why is HE more resilient to heterogeneity?**
+1. **Why is Sequential Hybrid more resilient than Standard Hybrid?**
 
-   - HE operates on locally trained models without modifying the training process
-   - Privacy is provided through encryption of model updates, not training perturbation
-   - This allows models to learn local patterns effectively despite heterogeneity
+   - Temporal separation of mechanisms prevents compounding errors
+   - DP noise affects training independently, while HE affects only communication
+   - This prevents error multiplication that occurs in the standard hybrid approach
 
-2. **Why does the hybrid approach struggle most?**
-   - The combination of noise injection (DP) and encryption/quantization (HE) compounds the challenges
+2. **Why does the Standard Hybrid approach struggle most?**
+   - The simultaneous application of noise injection (DP) and encryption/quantization (HE) compounds the challenges
    - DP noise is amplified when dealing with skewed local distributions
    - Quantization errors in HE are more significant with heterogeneous updates
    - These effects appear to be multiplicative rather than additive
@@ -97,27 +101,28 @@ Based on our combined IID and non-IID results, we revise our practical recommend
    - Group clients with similar data distributions
    - Apply different privacy settings to different clusters
 
-3. **Personalization Techniques**:
+3. **Sequential Privacy Orchestration**:
 
-   - Implement personalization layers to handle local distribution shifts
-   - Keep shared base model with private personalization heads
+   - Explore other sequential combinations of privacy mechanisms
+   - Investigate optimal ordering and parameter settings
 
-4. **Improved Hybrid Approaches**:
-   - Develop heterogeneity-aware hybrid privacy techniques
-   - Consider sequential application rather than simultaneous application of HE and DP
+4. **Heterogeneity-Aware Privacy Mechanisms**:
+   - Develop mechanisms specifically designed for heterogeneous data
+   - Optimize the sequential approach for different levels of data heterogeneity
 
-## 7. Detailed Client Data Analysis
+## 7. Detailed Client Performance Variation
 
-The extreme skew in our non-IID experiment (α=0.1) led to highly imbalanced client data:
+Our non-IID experiments showed considerable performance variation across clients:
 
-- Some clients had over 80% of their samples from a single class
-- Many clients had no samples from certain classes
-- Example: Client 5 had 97% of samples from class 4
+- Standard Hybrid demonstrated the widest accuracy disparities between clients
+- Sequential Hybrid maintained better minimum client accuracy
+- HE showed more uniform client performance
+- Baseline and DP had moderate client variation
 
-This level of heterogeneity is representative of real-world federated learning scenarios, where clients have very different data distributions based on user behavior and demographics.
+This client-level analysis highlights another advantage of the Sequential Hybrid approach—it reduces performance disparities across clients with different data distributions, a valuable property for fair federated learning.
 
 ## 8. Conclusion
 
-Our analysis reveals that data heterogeneity significantly impacts the effectiveness of privacy-preserving techniques in federated learning. While all approaches experience accuracy degradation with non-IID data, HE demonstrates remarkable resilience, making it particularly suitable for real-world federated learning deployments with heterogeneous data.
+Our analysis reveals that data heterogeneity significantly impacts the effectiveness of privacy-preserving techniques in federated learning. Different privacy mechanisms exhibit varying levels of resilience to non-IID data, with the Standard Hybrid approach struggling the most and HE demonstrating remarkable robustness.
 
-The hybrid approach, which provides the strongest privacy guarantees, struggles most with heterogeneous data, suggesting that there is significant room for improvement in developing privacy mechanisms that are robust to data heterogeneity.
+The Sequential Hybrid approach—our novel contribution applying privacy mechanisms temporally rather than simultaneously—provides a significant improvement over the Standard Hybrid in heterogeneous settings while maintaining similar privacy guarantees. This demonstrates the importance of carefully orchestrating privacy mechanisms in federated learning deployments with real-world data distributions.

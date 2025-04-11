@@ -1,0 +1,16 @@
+# Federated Learning and Machine Learning libraries
+torch==2.0.1
+torchvision==0.15.2
+
+# Differential Privacy library for PyTorch
+opacus==1.4.0
+
+# Homomorphic Encryption library (Python wrapper for Microsoft SEAL)
+Pyfhel==3.4.2
+
+numpy==1.23.5
+matplotlib==3.6.3
+scipy==1.9.3
+
+pandas==1.5.3
+scikit-learn==1.0.2

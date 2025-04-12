@@ -174,3 +174,42 @@ Potential directions for future research include:
 5. **Extending the sequential principle**:
    - Apply the sequential approach to other privacy and security mechanisms
    - Develop a theoretical framework for optimal mechanism separation
+
+- **Sequential Hybrid Implementation**: Added novel sequential application of DP and HE that improves stability and heterogeneity resilience
+- **Comprehensive Heterogeneity Analysis**: Enhanced support for non-IID data distributions with detailed analysis under varying degrees of heterogeneity
+- **Improved Visualization**: Added extensive plots to visualize privacy-utility-heterogeneity tradeoffs and approach comparisons
+- **Enhanced MIA Evaluation**: More sophisticated membership inference attacks with AUC and additional metrics
+- **Resource Measurement**: Added precise communication and computation overhead tracking
+- **Type Compatibility**: Fixed buffer dtype mismatch between HE and tensor operations
+
+## Implementation Details
+
+### Data
+
+- CIFAR-10 dataset
+- Support for both IID and non-IID data distributions (Dirichlet allocation with configurable α)
+
+### Models
+
+- SimpleCNN: Three convolutional layers, used for Baseline and DP
+- SmallCNN: Two convolutional layers, used for HE and Hybrid approaches
+
+### Privacy Mechanisms
+
+- **Differential Privacy**: Implemented using Opacus with gradient clipping and noise addition
+- **Homomorphic Encryption**: Implemented using Pyfhel with CKKS scheme
+- **Standard Hybrid**: Applies both DP and HE simultaneously
+- **Sequential Hybrid**: Applies DP during training and HE during aggregation
+
+### Privacy Evaluation
+
+- Membership Inference Attacks (MIA) using threshold-based and learning-based approaches
+- Metrics include accuracy, precision, recall, F1 score, and AUC
+
+## Interpreting Results
+
+- **Accuracy**: Higher is better, represents model utility
+- **MIA Success Rate (AUC)**: Lower is better (closer to 0.5), represents better privacy protection
+- **Communication Overhead**: Lower is better, represents efficiency
+- **Computation Time**: Lower is better, represents efficiency
+- **Accuracy Retention**: Higher is better, represents resilience to data heterogeneity

@@ -8,17 +8,6 @@ This repository implements a federated learning system with various privacy-pres
 4. **FL with Standard Hybrid (HE+DP)**: Applies both mechanisms simultaneously
 5. **FL with Sequential Hybrid (HE+DP)**: Our novel approach applying DP during training and HE during aggregation
 
-## Latest Improvements
-
-We've made several improvements to the codebase:
-
-- **Sequential Hybrid Implementation**: Added novel sequential application of DP and HE that improves stability and heterogeneity resilience
-- **Comprehensive Heterogeneity Analysis**: Enhanced support for non-IID data distributions with detailed analysis under varying degrees of heterogeneity
-- **Improved Visualization**: Added extensive plots to visualize privacy-utility-heterogeneity tradeoffs and approach comparisons
-- **Enhanced MIA Evaluation**: More sophisticated membership inference attacks with AUC and additional metrics
-- **Resource Measurement**: Added precise communication and computation overhead tracking
-- **Type Compatibility**: Fixed buffer dtype mismatch between HE and tensor operations
-
 ## Setup and Installation
 
 ### Using Docker (Recommended)
@@ -110,37 +99,153 @@ To generate all visualizations from experimental results:
 docker run -it --rm -v $(pwd):/app fl_research python /app/generate_plots.py
 ```
 
-## Implementation Details
+---
 
-### Data
+# Federated Learning: Theory and Implementation
 
-- CIFAR-10 dataset
-- Support for both IID and non-IID data distributions (Dirichlet allocation with configurable α)
+### Theory
 
-### Models
+- federated learning (FL) is a machine learning approach where multiple devices (clients) collaboratively train a model while keeping their data localized, the process follows these steps:
+  1.  initialization: a central server initializes a global model.
+  2.  distribution: the server distributes the model to selected clients.
+  3.  local training: each client trains the model on their local data.
+  4.  aggregation: the server aggregates the model updates (not the data itself).
+  5.  iteration: the process repeats for multiple rounds.
+- the key advantages are:
+  - data privacy (raw data never leaves devices).
+  - reduced communication costs (only model updates are transmitted).
+  - ability to leverage distributed data sources.
+- the most common aggregation method is federated averaging (FedAvg), which computes a weighted average of client updates based on their dataset sizes.
 
-- SimpleCNN: Three convolutional layers, used for Baseline and DP
-- SmallCNN: Two convolutional layers, used for HE and Hybrid approaches
+### Implementation
 
-### Privacy Mechanisms
+- in the codebase, federated learning is implemented through:
+  - FederatedClient class (federated/client.py): handles local training on client data.
+  - FederatedServer class (federated/server.py): manages the global model and aggregation.
+- the implementation uses PyTorch for model training and NumPy for efficient manipulation of model parameters.
 
-- **Differential Privacy**: Implemented using Opacus with gradient clipping and noise addition
-- **Homomorphic Encryption**: Implemented using Pyfhel with CKKS scheme
-- **Standard Hybrid**: Applies both DP and HE simultaneously
-- **Sequential Hybrid**: Applies DP during training and HE during aggregation
+---
 
-### Privacy Evaluation
+# Homomorphic Encryption: Theory and Implementation
 
-- Membership Inference Attacks (MIA) using threshold-based and learning-based approaches
-- Metrics include accuracy, precision, recall, F1 score, and AUC
+### Theory
 
-## Interpreting Results
+- homomorphic encryption (HE): allows computations to be performed on encrypted data without decrypting it.
+- the result, when decrypted, matches the result of performing the same operations on the plaintext.
+- for federated learning, HE enables:
+  - clients to encrypt model updates before sending them to the server.
+  - the server to aggregate encrypted updates.
+  - only clients have decryption keys, preventing the server from accessing raw updates.
+- the main challenges of HE are:
+  - computational overhead (encrypted operations are orders of magnitude slower).
+  - limited operations (many schemes only support addition and multiplication).
+  - noise growth (errors accumulate during computation, eventually corrupting results).
 
-- **Accuracy**: Higher is better, represents model utility
-- **MIA Success Rate (AUC)**: Lower is better (closer to 0.5), represents better privacy protection
-- **Communication Overhead**: Lower is better, represents efficiency
-- **Computation Time**: Lower is better, represents efficiency
-- **Accuracy Retention**: Higher is better, represents resilience to data heterogeneity
+### Implementation
+
+- the codebase uses CKKS scheme (the mathematical algorithm used for performing HE operations on data) via Pyfhel, which supports approximate arithmetic on real numbers:
+  - HEFederatedClient class (privacy/he.py): extends the base client with encryption.
+  - HEFederatedServer class (privacy/he.py): handles encrypted aggregation.
+- key implementation details:
+  - quantization: converting floating-point to integers.
+  - chunking: breaking parameters into manageable pieces.
+  - CKKS configuration: setting encryption parameters.
+
+---
+
+# Differential Privacy: Theory and Implementation
+
+### Theory
+
+- differential privacy (DP) provides mathematical guarantees about the privacy of individual data points in a dataset.
+- it works by adding calibrated noise to the learning process, ensuring that the presence or absence of any single data point has a limited impact on the final model.
+- key concepts:
+  - ε (Epsilon): Privacy budget - lower values provide stronger privacy.
+  - δ (Delta): Probability of privacy failure.
+  - sensitivity: maximum impact a single record can have on the output.
+  - noise addition: typically using gaussian or laplacian mechanisms.
+- for federated learning, DP can be applied at different levels:
+  - local DP: each client adds noise before sending updates.
+  - central DP: the server adds noise during aggregation.
+
+### Implementation
+
+- the codebase uses Opacus, a PyTorch library for DP training, focusing on local DP:
+  - DPFederatedClient class (privacy/dp.py): implements DP training.
+- key implementation details:
+  - gradient clipping: bounding gradient sensitivity.
+  - noise addition: automatically handled by Opacus.
+  - privacy accounting: tracking privacy budget.
+  - memory management: handling computational overhead.
+
+---
+
+# Hybrid Approach: Theory and Implementation
+
+### Theory
+
+- the hybrid approach combine HE and DP to leverage their complementary strengths:
+  - HE provides cryptographic security during aggregation.
+  - DP provides formal privacy guarantees for the learning process.
+- the goal is to achieve stronger privacy protection while mitigating the weaknesses of each approach.
+  - HE has high computational overhead but doesn't degrade model utility.
+  - DP adds noise that can reduce model accuracy but has lower computational cost.
+
+### Implementation
+
+- the codebase implements two hybrid approaches:
+  - combined HE + DP (privacy/hybrid.py): applies both mechanisms in parallel.
+  - sequential HE + DP (privacy/sequential_hybrid.py): applies mechanisms in sequence.
+- the key difference is how the privacy mechanisms interact.
+  - in the combined approach, DP is applied during training and HE during communication.
+  - in the sequential approach, they're applied one after another in a specific order.
+
+---
+
+# Non-IID Data Distribution: Theory and Implementation
+
+### Theory
+
+- in federated learning, non-IID (non-Independent and Identically Distributed) data is an important challenge.
+- in real-world scenarios, data distribution across clients is often heterogeneous, which can:
+  - slow down convergence.
+  - lead to biased global models.
+  - create fairness issues.
+- common types of non-IID dataL
+  - label skew: different class distributions across clients.
+  - feature skew: different feature distributions across clients.
+  - quantity skew: different amounts of data across clients.
+
+### Implementation
+
+- the codebase uses a Dirichlet distribution to create non-IID data partitions.
+- the alpha parameter controls heterogeneity:
+  - lower alpha values (e.g. 0.1): create more heterogeneous distributions (more non-IID).
+  - higher alpha values (e.g. 10): create more homogeneous distributions (closer to IID).
+- this implementation allows the research to evaluate how different privacy mechanisms perform under varying levels of data heterogeneity.
+
+---
+
+# Membership Inference Attacks: Theory and Implementation
+
+### Theory
+
+- membership inference attacks (MIA) attempt to determine whether a specific data point was used to train a model.
+- these attacks exploit the fact that models often behave differently on training data vs unseen data.
+- MIAs serve as a practical way to evaluate the privacy protection of a model:
+  - higher attack success rates indicate more privacy leakage.
+  - lower success rates suggest better privacy protection.
+- common attack approaches:
+  - threshold-based: using simple statistics (e.g., loss values) to infer membership.
+  - shadow model-based: training multiple "shadow models" to create training data for an attack model.
+  - meta-classifier: building a machine learning model to distinguish members from non-members.
+
+### Implementation
+
+- the codebase implements two types of MIA in attacks/mia.py:
+  - threshold attack: a simple approach using loss values.
+  - advanced attack: a learning based approach.
+- performance is measured with metrics like accuracy, precision, recall, F1 score, and AUC.
 
 ## License
 

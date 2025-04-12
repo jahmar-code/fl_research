@@ -326,7 +326,8 @@ plt.close()
 # 11. 3D Privacy-Utility-Communication Tradeoff
 from mpl_toolkits.mplot3d import Axes3D
 
-fig = plt.figure(figsize=(12, 10))
+# Create a larger figure with different aspect ratio to give more room for axis labels
+fig = plt.figure(figsize=(16, 12))  
 ax = fig.add_subplot(111, projection='3d')
 
 # Privacy (inverted for clarity - higher means better privacy)
@@ -346,22 +347,23 @@ for i, approach in enumerate(approaches):
 for i in range(len(approaches)):
     ax.plot([0, x[i]], [0, y[i]], [0, z[i]], 'k--', alpha=0.3)
 
-# Set labels with padding for better visibility
+# Increase labelpad significantly for z-axis to prevent cropping
 ax.set_xlabel('Privacy Protection (1-MIA AUC)', fontsize=12, labelpad=15)
 ax.set_ylabel('Model Utility (Accuracy)', fontsize=12, labelpad=15)
-ax.set_zlabel('Communication Efficiency', fontsize=12, labelpad=15)
-ax.set_title('Three-Way Trade-off Analysis', fontsize=14, pad=20)
+ax.set_zlabel('Communication Efficiency', fontsize=14, labelpad=25)  # Increased fontsize and labelpad
+ax.set_title('Three-Way Trade-off Analysis', fontsize=16, pad=20)
 ax.set_xlim(0, 0.6)
 ax.set_ylim(0, 0.8)
 ax.set_zlim(0, 1.0)
-ax.view_init(30, 45)  # Adjust the viewing angle
 
-# Adjust the margins to ensure labels aren't cut off
-plt.tight_layout(pad=5.0)
-# Additional padding for 3D plot
-fig.subplots_adjust(left=0.05, right=0.95, bottom=0.05, top=0.95)
+# Adjust viewing angle to make z-axis more visible
+ax.view_init(elev=25, azim=45)  # Modified elevation and azimuth angles
 
-plt.savefig('analysis_results/3d_tradeoff.png', dpi=300, bbox_inches='tight')
+# Create more space around the plot, particularly for the z-axis
+plt.subplots_adjust(left=0.0, right=0.9, bottom=0.0, top=0.9)
+
+# Use bbox_inches='tight' with a large pad value to prevent cropping
+plt.savefig('analysis_results/3d_tradeoff.png', dpi=300, bbox_inches='tight', pad_inches=1.0)
 plt.close()
 
 # 12. Communication Overhead Comparison

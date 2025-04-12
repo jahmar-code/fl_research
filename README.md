@@ -246,7 +246,3 @@ docker run -it --rm -v $(pwd):/app fl_research python /app/generate_plots.py
   - threshold attack: a simple approach using loss values.
   - advanced attack: a learning based approach.
 - performance is measured with metrics like accuracy, precision, recall, F1 score, and AUC.
-
-## License
-
-MIT License

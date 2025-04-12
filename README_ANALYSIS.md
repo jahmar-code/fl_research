@@ -108,11 +108,3 @@ When incorporating visualizations into reports, we recommend:
 3. **Heterogeneity Impact**: Use iid_vs_non_iid_accuracy.png and accuracy_retention.png to demonstrate varying resilience to data heterogeneity
 
 4. **Communication Efficiency**: Include communication_overhead.png when discussing resource requirements
-
-## Contact
-
-For any questions about this analysis, please contact the research team.
-
----
-
-© 2025 Federated Learning Privacy Research Team
